@@ -1,0 +1,525 @@
+1.attribute:
+  
+import pandas as pd
+
+# Load the Excel file with the merged dataset
+file_path = "cleaned_student_home_dataset.xlsx"
+df = pd.read_excel(file_path, engine='openpyxl')
+
+# Display the full dataset (all rows and columns)
+print("Full dataset:")
+print(df)
+
+# If you want to see just the column names
+print("\nColumns in the dataset:")
+print(df.columns.tolist())
+
+
+
+attribute types:
+
+import pandas as pd
+
+# Load your dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+df = pd.read_csv(file_path)
+
+# Identify columns based on data types and manual inspection
+nominal = []
+ordinal = []
+numeric = []
+
+# Define sample ordinal columns based on domain knowledge
+ordinal_keywords = ['Satisfaction', 'Stress', 'Pressure', 'Duration', 'Hours', 'Level', 'Education']
+
+for col in df.columns:
+    if df[col].dtype == 'object':
+        # Check if column is likely ordinal
+        if any(keyword in col for keyword in ordinal_keywords):
+            ordinal.append(col)
+        else:
+            nominal.append(col)
+    elif pd.api.types.is_numeric_dtype(df[col]):
+        numeric.append(col)
+
+# Display the result
+print("📌 Nominal Attributes:")
+print(nominal)
+print("\n📌 Ordinal Attributes:")
+print(ordinal)
+
+print("\n📌 Numeric Attributes:")
+print(numeric)
+
+
+
+merged:
+
+import pandas as pd
+
+# Step 1: Load the two datasets
+file1_path = "C:\\Users\\hp\\model\\student_data.csv"
+file2_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+
+df1 = pd.read_csv(file1_path)
+df2 = pd.read_csv(file2_path)
+
+# Step 2: Display first few rows and columns of each dataset to understand structure
+df1_preview = df1.head()
+df2_preview = df2.head()
+
+df1_columns = df1.columns.tolist()
+df2_columns = df2.columns.tolist()
+
+print("Preview of Dataset 1:")
+print(df1_preview)
+print("\nPreview of Dataset 2:")
+print(df2_preview)
+
+print("\nColumns in Dataset 1:", df1_columns)
+print("Columns in Dataset 2:", df2_columns)
+
+# Step 3: Ensure both 'school' and 'id' columns are of the same type (string)
+df1['school'] = df1['school'].astype(str)  # Convert 'school' to string
+df2['id'] = df2['id'].astype(str)  # Convert 'id' to string
+
+# Step 4: Merge datasets on the 'school' and 'id' columns (both should now be of type string)
+df = pd.merge(df1, df2, left_on='school', right_on='id', how='inner')
+
+# Step 5: Standardize 'Gender' values
+df['Gender'] = df['Gender'].map({'F': 'Female', 'M': 'Male'})
+
+# Step 6: Convert 'age' to integer and rename as 'Age'
+df['Age'] = df['age'].astype(int)
+
+# Step 7: Rename 'CGPA' to 'Performance'
+df['Performance'] = df['CGPA']
+
+# Step 8: Select 10 fields for the cleaned dataset
+prime_features = df[['Gender', 'Age', 'Performance', 'Depression', 
+                     'City', 'Profession', 'Academic Pressure', 
+                     'Work Pressure', 'Work/Study Hours', 'Financial Stress']]
+
+# Step 9: Export to Excel
+prime_features.to_excel("cleaned_student_home_dataset.xlsx", index=False, engine='openpyxl')
+
+print("✅ Excel file saved as cleaned_student_home_dataset.xlsx")
+
+
+
+
+stratified sample:
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load dataset
+df = pd.read_csv("C:\\Users\\hp\\model\\Student Depression Dataset.csv")
+
+# Drop missing values in the column to stratify
+df = df.dropna(subset=["Depression"])
+
+# Create a stratified sample (e.g., 20%)
+sample_df, _ = train_test_split(df, test_size=0.8, stratify=df["Depression"], random_state=42)
+
+# Show the stratified sample
+print("Stratified Sample:\n")
+print(sample_df.head())  # You can change to print(sample_df) to see all
+
+# Show the original distribution
+print("\nOriginal Distribution:")
+print(df["Depression"].value_counts(normalize=True))
+
+# Show the stratified sample distribution
+print("\nStratified Sample Distribution:")
+print(sample_df["Depression"].value_counts(normalize=True))
+
+
+
+minmax:
+
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+
+# Load dataset and normalize the 'CGPA' column
+df = pd.read_csv("C:\\Users\\hp\\model\\Student Depression Dataset.csv")
+df["CGPA"] = MinMaxScaler().fit_transform(df[["CGPA"]])
+
+# Print the normalized 'CGPA' values in the terminal
+print("Normalized 'CGPA' values:")
+print(df[["CGPA"]].head())  # Display first 5 rows
+
+
+  
+histogram:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
+# Load dataset and normalize the 'CGPA' column
+df = pd.read_csv("C:\\Users\\hp\\model\\Student Depression Dataset.csv")
+df["CGPA"] = MinMaxScaler().fit_transform(df[["CGPA"]])
+
+# Plot histogram of normalized 'CGPA' values
+plt.hist(df["CGPA"], bins=10, edgecolor='black')
+plt.title('Histogram of Normalized CGPA')
+plt.xlabel('Normalized CGPA')
+plt.ylabel('Frequency')
+plt.show()
+
+
+  
+classification:
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn import tree
+
+# Load dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+df = pd.read_csv(file_path)
+
+# Clean column names
+df.columns = df.columns.str.strip()
+
+# Define target and encode it
+target = "Dietary Habits"
+target_encoder = LabelEncoder()
+df[target] = target_encoder.fit_transform(df[target])
+
+# Handle missing values (numeric with median, categorical with mode)
+df.fillna(df.median(numeric_only=True), inplace=True)
+df.fillna(df.mode().iloc[0], inplace=True)
+
+# Encode categorical variables (excluding target)
+label_encoders = {}
+for column in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le
+
+# Define features
+features = [col for col in df.columns if col != target]
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(df[features], df[target], test_size=0.2, random_state=42)
+
+# Train Compact Decision Tree Classifier
+clf = DecisionTreeClassifier(criterion="entropy", max_depth=3, min_samples_split=15, min_samples_leaf=10, random_state=42)
+clf.fit(X_train, y_train)
+
+# Visualize the Decision Tree
+plt.figure(figsize=(12, 8))
+tree.plot_tree(clf, feature_names=features, class_names=target_encoder.classes_, filled=True, rounded=True, fontsize=12)
+plt.title("Compact Decision Tree for Dietary Habits", fontsize=16, pad=20)
+
+# Save the plot as a PDF
+pdf_path = "C:\\Users\\hp\\decision_tree_project\\dietary_habits_tree_compact.pdf"
+plt.savefig(pdf_path, format="pdf", dpi=300, bbox_inches="tight")
+plt.show()
+
+print(f"Final Compact Decision Tree saved as {pdf_path}")
+
+
+  
+clustering:
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.utils import shuffle
+
+# Load dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"  # Update with your path
+df = pd.read_csv(file_path)
+
+# Display available columns
+print("Available columns:", df.columns)
+
+# Select relevant features
+selected_features = ['Age', 'CGPA']  # Choose columns relevant for clustering
+df = df[selected_features].dropna()
+
+# Ensure CGPA is within range [0,10]
+df = df[(df['CGPA'] >= 0) & (df['CGPA'] <= 10)] 
+
+# Shuffle data to randomize cluster distributions
+df = shuffle(df, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(df)
+
+# Apply K-Means clustering
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+df['Cluster'] = kmeans.fit_predict(scaled_data)
+
+# Shuffle cluster labels to prevent color order pattern
+df['Cluster'] = np.random.permutation(df['Cluster'])
+
+# Display cluster distribution
+cluster_counts = df['Cluster'].value_counts().sort_index()
+print("\nCluster Distribution:")
+print(cluster_counts)
+
+# Plot results
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x=df['Age'], y=df['CGPA'], hue=df['Cluster'], palette='bright', s=100)
+plt.title("K-Means Clustering on Age vs CGPA (Shuffled Colors)")
+plt.xlabel("Age")
+plt.ylabel("CGPA")
+plt.ylim(0, 10)  # Set Y-axis limit from 0 to 10
+plt.legend(title="Cluster")
+
+# Save the plot as a PDF
+pdf_path = r"C:\Users\hp\Desktop\cluster_plot.pdf"  # Change to a writable location
+plt.savefig(pdf_path, format='pdf')
+plt.show()
+
+# Output confirmation
+print(f"Cluster plot saved to: {pdf_path}")
+
+
+  
+association:
+
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
+
+# Load dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+df = pd.read_csv(file_path)
+
+# Show the first few rows of the dataframe
+print("Dataset preview:")
+print(df.head())
+
+# Preprocess the data: Convert rows into transactions (list of items)
+def preprocess_data(df):
+    transactions = df.apply(lambda row: row.dropna().astype(str).values.tolist(), axis=1)
+    return transactions
+
+# Convert the transactions to one-hot encoding format
+def encode_transactions(transactions):  
+    encoder = TransactionEncoder()
+    encoded_data = encoder.fit(transactions).transform(transactions)
+    return pd.DataFrame(encoded_data, columns=encoder.columns_)
+
+# Apply the Apriori algorithm to find frequent itemsets
+def get_frequent_itemsets(encoded_data, min_support=0.3):
+    return apriori(encoded_data, min_support=min_support, use_colnames=True)
+
+# Generate association rules from frequent itemsets
+def get_association_rules(frequent_itemsets, min_threshold=0.7):
+    return association_rules(frequent_itemsets, metric="confidence", min_threshold=min_threshold)
+
+# Main steps
+transactions = preprocess_data(df)
+encoded_data = encode_transactions(transactions)
+frequent_itemsets = get_frequent_itemsets(encoded_data, min_support=0.3)
+association_rules_result = get_association_rules(frequent_itemsets, min_threshold=0.7)
+
+# Show results
+print("\nFrequent Itemsets:")
+print(frequent_itemsets)
+
+print("\nAssociation Rules:")
+print(association_rules_result)
+
+
+  
+all 8:
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import joblib
+import os
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+
+# Step 1: Load the Dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+df = pd.read_csv(file_path)
+print("✅ Dataset Loaded Successfully.")
+
+# Step 2: Preprocessing
+if 'Degree' in df.columns:
+    df.drop(columns=["Degree"], inplace=True)
+
+df.dropna(inplace=True)
+
+# Encode all object-type (categorical) columns automatically
+categorical_cols = df.select_dtypes(include='object').columns.tolist()
+
+label_encoders = {}
+for col in categorical_cols:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col].astype(str))
+    label_encoders[col] = le
+
+# Bin 'Depression' into categories
+bins = [-float("inf"), 0.3, 0.7, float("inf")]
+labels = ['Low', 'Moderate', 'High']
+df['Depression_Category'] = pd.cut(df['Depression'], bins=bins, labels=labels)
+
+# Encode target labels
+target_encoder = LabelEncoder()
+y = target_encoder.fit_transform(df['Depression_Category'])
+
+# Features
+X = df.drop(columns=['Depression', 'Depression_Category'])
+
+# Step 3: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Scaling and Feature Selection
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Select top 10 features
+selector = SelectKBest(score_func=f_classif, k=10)
+X_train = selector.fit_transform(X_train, y_train)
+X_test = selector.transform(X_test)
+
+# Step 5: PCA
+pca = PCA(n_components=5)
+X_train = pca.fit_transform(X_train)
+X_test = pca.transform(X_test)
+
+# Step 6: Define Models
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "Random Forest": RandomForestClassifier(n_estimators=100),
+    "Gradient Boosting": GradientBoostingClassifier(),
+    "Decision Tree": DecisionTreeClassifier(max_depth=5),
+    "SVM": SVC(kernel='linear'),
+    "Naive Bayes": GaussianNB(),
+    "KNN": KNeighborsClassifier(n_neighbors=5)
+}
+
+# Step 7: Train and Evaluate Models
+accuracies = {}
+confusion_matrices = {}
+
+output_folder = "confusion_matrices"
+os.makedirs(output_folder, exist_ok=True)
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    # Store metrics
+    accuracies[name] = accuracy_score(y_test, y_pred)
+    confusion_matrices[name] = confusion_matrix(y_test, y_pred)
+
+    print(f"\n🔹 {name} Model Performance:")
+    print(f"✅ Accuracy: {accuracies[name]:.4f}")
+    print(classification_report(y_test, y_pred))
+
+    # Save confusion matrix
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(confusion_matrices[name], annot=True, fmt="d", cmap="Blues")
+    plt.title(f"Confusion Matrix: {name}")
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    filename = f"{output_folder}/{name.replace(' ', '_')}_confusion_matrix.png"
+    plt.savefig(filename)
+    plt.close()
+    print(f"✅ Saved {name} confusion matrix to {filename}")
+
+# Step 8: Display Saved Confusion Matrices
+print("\n✅ Displaying Saved Confusion Matrices:")
+for filename in os.listdir(output_folder):
+    if filename.endswith(".png"):
+        img_path = os.path.join(output_folder, filename)
+        img = plt.imread(img_path)
+        plt.figure(figsize=(6, 5))
+        plt.imshow(img)
+        plt.axis('off')
+        plt.title(f"Confusion Matrix: {filename.split('_')[0]}")
+        plt.show()
+
+# Step 9: Accuracy Comparison Plot
+plt.figure(figsize=(12, 6))
+sns.barplot(x=list(accuracies.keys()), y=list(accuracies.values()), palette="viridis")
+plt.xticks(rotation=45)
+plt.title("Model Accuracy Comparison")
+plt.ylabel("Accuracy Score")
+plt.tight_layout()
+plt.show()
+
+# Step 10: Save the Best Model
+best_model_name = max(accuracies, key=accuracies.get)
+best_model = models[best_model_name]
+print(f"\n🏆 Best Performing Model: {best_model_name} (Accuracy: {accuracies[best_model_name]:.4f})")
+
+joblib.dump(best_model, "best_model.pkl")
+joblib.dump(scaler, "scaler.pkl")
+joblib.dump(selector, "selector.pkl")
+joblib.dump(pca, "pca.pkl")
+joblib.dump(label_encoders, "label_encoders.pkl")
+joblib.dump(target_encoder, "target_encoder.pkl")
+print("✅ Best model and preprocessing files saved successfully!")
+
+
+
+  smoothing:
+
+
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv("Student Depression Dataset.csv")
+
+# Apply smoothing to the 'Depression' column using rolling average
+df['Depression_Smoothed'] = df['Depression'].rolling(window=3, min_periods=1).mean()
+
+print(df[['Depression', 'Depression_Smoothed']].head())
+
+
+handling missing values:
+
+
+
+
+
+
+
+
+
+
+mean:
+
+import pandas as pd
+
+df = pd.read_csv("Student Depression Dataset.csv")
+mean_age = df['Age'].mean()
+
+print("Mean Age:", mean_age)
+
+
+
+
+
