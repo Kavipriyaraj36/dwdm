@@ -501,11 +501,17 @@ print(df[['Depression', 'Depression_Smoothed']].head())
 
 handling missing values:
 
+import pandas as pd
+df = pd.read_csv("C:\\Users\\hp\\model\\Student Depression Dataset.csv")
 
+for column in df.columns:
+    if df[column].dtype == 'object':  
+        df[column].fillna(df[column].mode()[0], inplace=True)  # Fill with mode
+    else:  
+        df[column].fillna(df[column].mean(), inplace=True)  # Fill with mean
+df.drop_duplicates(inplace=True)
 
-
-
-
+print(df.head())
 
 
 
@@ -518,6 +524,28 @@ df = pd.read_csv("Student Depression Dataset.csv")
 mean_age = df['Age'].mean()
 
 print("Mean Age:", mean_age)
+
+
+median:
+
+import pandas as pd
+
+df = pd.read_csv("Student Depression Dataset.csv")
+median_age = df['Age'].median()
+
+print("Median Age:", median_age)
+
+
+
+std:
+
+import pandas as pd
+
+df = pd.read_csv("Student Depression Dataset.csv")
+std_age = df['Age'].std()
+
+print("Standard Deviation of Age:", std_age)
+
 
 
 
