@@ -549,5 +549,74 @@ print("Standard Deviation of Age:", std_age)
 
 
 
+naive:
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+
+# Load dataset
+file_path = "C:\\Users\\hp\\model\\Student Depression Dataset.csv"
+df = pd.read_csv(file_path)
+
+# Clean column names
+df.columns = df.columns.str.strip()
+
+# Define target and encode it
+target = "Dietary Habits"
+target_encoder = LabelEncoder()
+df[target] = target_encoder.fit_transform(df[target])
+
+# Handle missing values (numeric with median, categorical with mode)
+df.fillna(df.median(numeric_only=True), inplace=True)
+df.fillna(df.mode().iloc[0], inplace=True)
+
+# Encode categorical variables (excluding target)
+label_encoders = {}
+for column in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le
+
+# Define features
+features = [col for col in df.columns if col != target]
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(df[features], df[target], test_size=0.2, random_state=42)
+
+# Train Naive Bayes Classifier
+nb_classifier = GaussianNB()
+nb_classifier.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = nb_classifier.predict(X_test)
+
+# Display classification report
+print("Classification Report:\n")
+print(classification_report(y_test, y_pred, target_names=target_encoder.classes_))
+
+# Confusion Matrix and Save as PDF
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=target_encoder.classes_)
+
+# Plot and save
+plt.figure(figsize=(8, 6))
+disp.plot(cmap=plt.cm.Purples, values_format='d')
+plt.title("Naive Bayes Confusion Matrix for Dietary Habits", fontsize=14)
+pdf_path = "C:\\Users\\hp\\decision_tree_project\\naive_bayes_confusion_matrix.pdf"
+plt.savefig(pdf_path, format="pdf", dpi=300, bbox_inches="tight")
+plt.show()
+
+print(f"Naive Bayes Confusion Matrix saved as {pdf_path}")
+
+
+
+
+
 
 
