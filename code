@@ -615,6 +615,64 @@ plt.show()
 print(f"Naive Bayes Confusion Matrix saved as {pdf_path}")
 
 
+dendrogram:
+
+import pandas as pd
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+
+# Load the dataset
+df = pd.read_csv("Student Depression Dataset.csv")
+
+# Optional: Select numeric features only
+df_numeric = df.select_dtypes(include=['float64', 'int64'])
+
+# Optional: Drop missing values
+df_numeric = df_numeric.dropna()
+
+# Generate linkage matrix
+linked = linkage(df_numeric, method='ward')
+
+# Plot dendrogram
+plt.figure(figsize=(10, 7))
+dendrogram(linked)
+plt.title("Dendrogram")
+plt.xlabel("Samples")
+plt.ylabel("Distance")
+plt.show()
+
+
+
+smoothing:
+
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv("Student Depression Dataset.csv")
+
+# Apply smoothing to the 'Depression' column using rolling average
+df['Depression_Smoothed'] = df['Depression'].rolling(window=3, min_periods=1).mean()
+
+print(df[['Depression', 'Depression_Smoothed']].head())
+
+
+
+boxplot:
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
+# Load dataset and normalize the 'CGPA' column
+df = pd.read_csv("Student Depression Dataset.csv")
+df["CGPA"] = MinMaxScaler().fit_transform(df[["CGPA"]])
+
+# Plot box plot of normalized 'CGPA' values
+plt.boxplot(df["CGPA"], vert=False, patch_artist=True, boxprops=dict(facecolor='skyblue', color='black'))
+plt.title('Box Plot of Normalized CGPA')
+plt.xlabel('Normalized CGPA')
+plt.show()
 
 
 
